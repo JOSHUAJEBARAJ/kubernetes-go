@@ -45,13 +45,15 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	// gvk := schema.GroupVersionKind{...}: This part of the code defines a GroupVersionKind (GVK) struct, which specifies the Kubernetes group, version, and kind of the resource you want to work with.
 	gvk := schema.GroupVersionKind{
 		Group:   v1.GroupName,
 		Version: "v1",
 		Kind:    "Pod",
 	}
-
+	// : A new runtime scheme is created. The runtime scheme is a registry of known types in Kubernetes. It is used to map between Go types and their corresponding group, version, and kind.
 	runtimeSchema := runtime.NewScheme()
+	//This line registers the ConfigMap type as a known type in the runtime scheme. It associates the GVK (gvk) you defined earlier with the Go type &v1.ConfigMap{}. This registration allows the serializer to correctly decode the serialized data as a Pod.
 	runtimeSchema.AddKnownTypeWithName(gvk, &v1.Pod{})
 	protoSerializer := protobuf.NewSerializer(runtimeSchema, runtimeSchema)
 	for _, v := range repsonse.Kvs {
