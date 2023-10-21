@@ -40,7 +40,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	repsonse, err := client.Get(context.Background(), "/registry/configmaps/kube-system", clientv3.WithPrefix())
+	repsonse, err := client.Get(context.Background(), "/registry/pods/kube-system", clientv3.WithPrefix())
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -48,17 +48,20 @@ func main() {
 	gvk := schema.GroupVersionKind{
 		Group:   v1.GroupName,
 		Version: "v1",
-		Kind:    "Configmaps",
+		Kind:    "Pod",
 	}
 
 	runtimeSchema := runtime.NewScheme()
-	runtimeSchema.AddKnownTypeWithName(gvk, &v1.ConfigMap{})
+	runtimeSchema.AddKnownTypeWithName(gvk, &v1.Pod{})
 	protoSerializer := protobuf.NewSerializer(runtimeSchema, runtimeSchema)
 	for _, v := range repsonse.Kvs {
 		//fmt.Println(string(v.Value))
-		cm := &v1.ConfigMap{}
-		protoSerializer.Decode(v.Value, &gvk, cm)
-		fmt.Println(cm.Name)
+		pods := &v1.Pod{}
+		_, _, err := protoSerializer.Decode(v.Value, &gvk, pods)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(pods)
 	}
 }
 
